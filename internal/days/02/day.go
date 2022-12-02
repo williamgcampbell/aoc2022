@@ -11,19 +11,72 @@ import (
 //go:embed input.txt
 var input string
 
+type Outcome int64
+
 const (
-	OpponentRock     = "A"
-	OpponentPaper    = "B"
-	OpponentScissors = "C"
-
-	MeRock     = "X"
-	MePaper    = "Y"
-	MeScissors = "Z"
-
-	ShouldLose = "X"
-	ShouldDraw = "Y"
-	ShouldWin  = "Z"
+	OutcomeUndefined Outcome = iota
+	Win
+	Lose
+	Tie
 )
+
+var outcomeMap = map[string]Outcome{
+	"X": Lose,
+	"Y": Tie,
+	"Z": Win,
+}
+
+func ParseOutcomeString(str string) Outcome {
+	c, ok := outcomeMap[str]
+	if ok {
+		return c
+	}
+	return OutcomeUndefined
+}
+
+type Move int64
+
+const (
+	MoveUndefined Move = iota - 1
+	Rock
+	Paper
+	Scissors
+)
+
+var moveMap = map[string]Move{
+	"A": Rock,
+	"B": Paper,
+	"C": Scissors,
+	"X": Rock,
+	"Y": Paper,
+	"Z": Scissors,
+}
+
+var compare = []Outcome{
+	0: Tie,
+	1: Lose,
+	2: Win,
+}
+
+func (m Move) LosesTo() Move {
+	return (m + 1) % 3
+}
+
+func (m Move) Beats() Move {
+	return (m + 2) % 3
+}
+
+func (m Move) Result(o Move) Outcome {
+	return compare[((o-m)%3+3)%3]
+}
+
+func ParseMoveString(str string) Move {
+	c, ok := moveMap[str]
+	if ok {
+		return c
+	}
+	return MoveUndefined
+}
 
 type Solver struct{}
 
@@ -47,79 +100,53 @@ func totalScore(rounds []string, part1 bool) int {
 		code := strings.Split(round, " ")
 		if part1 {
 			// the two inputs represent the opponent's play and your play respectively
-			score += roundScore(code[0], code[1])
+			score += roundScore(ParseMoveString(code[0]), ParseMoveString(code[1]))
 		} else {
 			// the two inputs represent the opponent's play and what the outcome of the game should be respectively
-			opponent := code[0]
-			me := myPlay(opponent, code[1])
+			opponent := ParseMoveString(code[0])
+			me := getMyMove(opponent, ParseOutcomeString(code[1]))
 			score += roundScore(opponent, me)
 		}
 	}
 	return score
 }
 
-// myPlay returns a string letter X for Rock, Y for Paper, and Z for Scissors to represent what your play will be
-// based on the opponents play and the desired outcome.
+// getMyMove returns the Move that represent what your play will be.
+// This is determined by taking the opponents move and the desired outcome.
 //
 // Opponents play will be A for Rock, B for Paper, and Z for Scissors
-func myPlay(opponentPlay string, desiredOutcome string) string {
-	if opponentPlay == OpponentRock {
-		if desiredOutcome == ShouldLose {
-			return MeScissors
-		}
-		if desiredOutcome == ShouldWin {
-			return MePaper
-		}
-		return MeRock
+func getMyMove(opponentMove Move, desiredOutcome Outcome) Move {
+	if desiredOutcome == Tie {
+		return opponentMove
 	}
 
-	if opponentPlay == OpponentPaper {
-		if desiredOutcome == ShouldLose {
-			return MeRock
-		}
-		if desiredOutcome == ShouldWin {
-			return MeScissors
-		}
-		return MePaper
+	if desiredOutcome == Lose {
+		return opponentMove.Beats()
 	}
 
-	if desiredOutcome == ShouldLose {
-		return MePaper
-	}
-	if desiredOutcome == ShouldWin {
-		return MeRock
-	}
-	return MeScissors
+	return opponentMove.LosesTo()
 }
 
-func roundScore(opponent, me string) int {
+func roundScore(opponent, me Move) int {
 	score := outcomeScore(opponent, me)
-	if me == MeRock {
+	if me == Rock {
 		score += 1
-	} else if me == MePaper {
+	} else if me == Paper {
 		score += 2
-	} else if me == MeScissors {
+	} else if me == Scissors {
 		score += 3
 	}
 	return score
 }
 
-func outcomeScore(opponent, me string) int {
-	if isWin(opponent, me) {
+func outcomeScore(opponent, me Move) int {
+	if me.Result(opponent) == Win {
 		return 6
 	}
 
-	if isTie(opponent, me) {
+	if me.Result(opponent) == Tie {
 		return 3
 	}
 
 	return 0
-}
-
-func isWin(opponent, me string) bool {
-	return opponent == OpponentRock && me == MePaper || opponent == OpponentPaper && me == MeScissors || opponent == OpponentScissors && me == MeRock
-}
-
-func isTie(opponent, me string) bool {
-	return opponent == OpponentRock && me == MeRock || opponent == OpponentPaper && me == MePaper || opponent == OpponentScissors && me == MeScissors
 }
