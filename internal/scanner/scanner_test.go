@@ -66,6 +66,7 @@ func TestScanIntLines(t *testing.T) {
 		},
 		"Empty line is ignored": {
 			input: `1
+
 2`,
 			want:    []int{1, 2},
 			wantErr: true,
@@ -110,6 +111,7 @@ func TestScanLines(t *testing.T) {
 		},
 		"Empty line is empty": {
 			input: `l1
+
 l3`,
 			want: []string{"l1", "", "l3"},
 		},
@@ -145,6 +147,7 @@ func TestScanUntilEmptyLine(t *testing.T) {
 		},
 		"Empty lines are ignored": {
 			input: `l1
+
 l3`,
 			want:      []string{"l1", "l3"},
 			delimiter: "",
