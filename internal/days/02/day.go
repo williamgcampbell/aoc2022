@@ -3,6 +3,7 @@ package _2
 import (
 	_ "embed"
 	"github.com/williamgcampbell/aoc2022/internal/scanner"
+	"io"
 	"strconv"
 	"strings"
 )
@@ -27,23 +28,31 @@ const (
 type Solver struct{}
 
 func (d *Solver) SolvePart1() string {
-	r := strings.NewReader(input)
-	lines := scanner.ScanLines(r)
-	return strconv.Itoa(totalScore(lines, false))
+	return solve(strings.NewReader(input), true)
 }
 
-func totalScore(rounds []string, isPartTwo bool) int {
+func (d *Solver) SolvePart2() string {
+	return solve(strings.NewReader(input), false)
+}
+
+func solve(reader io.Reader, part1 bool) string {
+	lines := scanner.ScanLines(reader)
+	score := totalScore(lines, part1)
+	return strconv.Itoa(score)
+}
+
+func totalScore(rounds []string, part1 bool) int {
 	score := 0
 	for _, round := range rounds {
 		code := strings.Split(round, " ")
-		if isPartTwo {
+		if part1 {
+			// the two inputs represent the opponent's play and your play respectively
+			score += roundScore(code[0], code[1])
+		} else {
 			// the two inputs represent the opponent's play and what the outcome of the game should be respectively
 			opponent := code[0]
 			me := myPlay(opponent, code[1])
 			score += roundScore(opponent, me)
-		} else {
-			// the two inputs represent the opponent's play and your play respectively
-			score += roundScore(code[0], code[1])
 		}
 	}
 	return score
@@ -113,10 +122,4 @@ func isWin(opponent, me string) bool {
 
 func isTie(opponent, me string) bool {
 	return opponent == OpponentRock && me == MeRock || opponent == OpponentPaper && me == MePaper || opponent == OpponentScissors && me == MeScissors
-}
-
-func (d *Solver) SolvePart2() string {
-	r := strings.NewReader(input)
-	lines := scanner.ScanLines(r)
-	return strconv.Itoa(totalScore(lines, true))
 }

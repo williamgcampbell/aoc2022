@@ -2,9 +2,10 @@ package _1
 
 import (
 	_ "embed"
-	"fmt"
 	"github.com/williamgcampbell/aoc2022/internal"
 	"github.com/williamgcampbell/aoc2022/internal/scanner"
+	"io"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -15,72 +16,45 @@ var input string
 type Solver struct{}
 
 func (d *Solver) SolvePart1() string {
-	r := strings.NewReader(input)
-	lines := scanner.ScanLines(r)
-	return strconv.Itoa(mostCalories(lines))
-}
-
-func mostCalories(lines []string) int {
-	r := 0
-	currentCalories := 0
-	for _, line := range lines {
-		if len(line) == 0 {
-			if currentCalories > r {
-				r = currentCalories
-			}
-			currentCalories = 0
-		} else {
-			lineInt, err := strconv.Atoi(line)
-			if err != nil {
-				fmt.Println("converting to int: %w", err)
-				return 0
-			}
-			currentCalories += lineInt
-		}
-	}
-	return r
+	return solve(strings.NewReader(input), true)
 }
 
 func (d *Solver) SolvePart2() string {
-	r := strings.NewReader(input)
-	lines := scanner.ScanLines(r)
-	return strconv.Itoa(topThreeCalories(lines))
+	return solve(strings.NewReader(input), false)
 }
 
-func topThreeCalories(lines []string) int {
-	first, second, third := 0, 0, 0
+func solve(reader io.Reader, part1 bool) string {
+	lines := scanner.ScanLines(reader)
+	calories := getCalories(lines)
+	if part1 {
+		return strconv.Itoa(calories[len(calories)-1])
+	} else {
+		return strconv.Itoa(calories[len(calories)-1] + calories[len(calories)-2] + calories[len(calories)-3])
+	}
+}
 
+// getCalories calculates the number of calories carried by each elf
+func getCalories(lines []string) []int {
+	var calories []int
 	currentCalories := 0
 	for _, line := range lines {
 		if len(line) == 0 {
-			first, second, third = maxThree(first, second, third, currentCalories)
+			calories = insertSorted(calories, currentCalories)
 			currentCalories = 0
 		} else {
 			lineInt := internal.MustAtoI(line)
 			currentCalories += lineInt
 		}
 	}
-	first, second, third = maxThree(first, second, third, currentCalories)
-	return first + second + third
+	calories = insertSorted(calories, currentCalories)
+	return calories
 }
 
-func maxThree(f, s, t, d int) (int, int, int) {
-	if d > f {
-		temp := f
-		f = d
-		d = temp
-	}
-
-	if d > s {
-		temp := s
-		s = d
-		d = temp
-	}
-
-	if d > t {
-		temp := s
-		t = d
-		d = temp
-	}
-	return f, s, t
+// insertSorted inserts an int v into the array ss in ascending order
+func insertSorted(ss []int, v int) []int {
+	i := sort.SearchInts(ss, v)
+	ss = append(ss, 0)
+	copy(ss[i+1:], ss[i:])
+	ss[i] = v
+	return ss
 }
