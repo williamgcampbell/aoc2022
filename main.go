@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	chorus  = "On the %s day of Christmas the part %s solution was: %s\n"
+	chorus  = "On the %s day of Christmas the part %s solution is: %s\n"
 	numDays = 25
 )
 
@@ -31,11 +31,14 @@ func singDay(num int, day days.Solver) {
 }
 
 func singPart(part string, day int, solution string) {
+	if day == 5 && part == "one" {
+		fmt.Println("FIIIIIIIIIIVE GOOOOOLDEN R....just kidding. ")
+	}
 	fmt.Printf(chorus, ordinalString(day), part, normalizeSolution(solution))
 }
 
 func normalizeSolution(r string) string {
-	if r == "0" {
+	if r == "" {
 		return "I don't know"
 	}
 	return r
