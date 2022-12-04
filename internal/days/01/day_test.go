@@ -34,7 +34,7 @@ func TestSolvePart2(t *testing.T) {
 	require.Equal(t, "197400", day.SolvePart2())
 }
 
-func TestSolvePart1_samples(t *testing.T) {
+func TestSolve_Examples(t *testing.T) {
 	tests := map[string]struct {
 		input string
 		want  string

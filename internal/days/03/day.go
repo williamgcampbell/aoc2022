@@ -52,16 +52,6 @@ func solve(reader io.Reader, part1 bool) string {
 	return strconv.Itoa(sum)
 }
 
-func dup(c1, c2 string) string {
-	var dups string
-	for _, c := range c1 {
-		if strings.ContainsRune(c2, c) {
-			dups += string(c)
-		}
-	}
-	return dups
-}
-
 func priority(d string) int {
 	return strings.Index(alphebet, d) + 1
 }

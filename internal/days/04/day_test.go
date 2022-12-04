@@ -7,21 +7,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const example = ``
+const example = `2-4,6-8
+2-3,4-5
+5-7,7-9
+2-8,3-7
+6-6,4-6
+2-6,4-8`
 
 func TestSolvePart1(t *testing.T) {
 	t.Parallel()
 	day := &Solver{}
-	require.Equal(t, "", day.SolvePart1())
+	require.Equal(t, "547", day.SolvePart1())
 }
 
 func TestSolvePart2(t *testing.T) {
 	t.Parallel()
 	day := &Solver{}
-	require.Equal(t, "", day.SolvePart2())
+	require.Equal(t, "843", day.SolvePart2())
 }
 
-func TestSolvePart1_samples(t *testing.T) {
+func TestSolve(t *testing.T) {
 	tests := map[string]struct {
 		input string
 		want  string
@@ -29,12 +34,12 @@ func TestSolvePart1_samples(t *testing.T) {
 	}{
 		"Example": {
 			input: example,
-			want:  "",
+			want:  "2",
 			part1: true,
 		},
 		"Example part 2": {
 			input: example,
-			want:  "",
+			want:  "4",
 		},
 	}
 

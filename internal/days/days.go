@@ -6,6 +6,8 @@ import (
 	_3 "github.com/williamgcampbell/aoc2022/internal/days/03"
 	_4 "github.com/williamgcampbell/aoc2022/internal/days/04"
 	_5 "github.com/williamgcampbell/aoc2022/internal/days/05"
+	_6 "github.com/williamgcampbell/aoc2022/internal/days/06"
+	_7 "github.com/williamgcampbell/aoc2022/internal/days/07"
 )
 
 func RegisterAll(registry SolverRegistry) {
@@ -14,4 +16,6 @@ func RegisterAll(registry SolverRegistry) {
 	registry.Register(3, &_3.Solver{})
 	registry.Register(4, &_4.Solver{})
 	registry.Register(5, &_5.Solver{})
+	registry.Register(6, &_6.Solver{})
+	registry.Register(7, &_7.Solver{})
 }

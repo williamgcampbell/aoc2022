@@ -21,7 +21,7 @@ func TestSolvePart2(t *testing.T) {
 	require.Equal(t, "", day.SolvePart2())
 }
 
-func TestSolvePart1_samples(t *testing.T) {
+func TestSolve(t *testing.T) {
 	tests := map[string]struct {
 		input string
 		want  string
