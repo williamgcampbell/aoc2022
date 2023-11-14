@@ -40,7 +40,7 @@ func TestSolvePart1(t *testing.T) {
 func TestSolvePart2(t *testing.T) {
 	t.Parallel()
 	day := &Solver{}
-	require.Equal(t, "24933642", day.SolvePart2())
+	require.Equal(t, "8319096", day.SolvePart2())
 }
 
 func TestSolve(t *testing.T) {

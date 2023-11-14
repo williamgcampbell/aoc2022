@@ -7,7 +7,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const example = ``
+const example = `30373
+25512
+65332
+33549
+35390`
 
 func TestSolvePart1(t *testing.T) {
 	t.Parallel()
@@ -29,7 +33,7 @@ func TestSolve(t *testing.T) {
 	}{
 		"Example": {
 			input: example,
-			want:  "",
+			want:  "21",
 			part1: true,
 		},
 		"Example part 2": {

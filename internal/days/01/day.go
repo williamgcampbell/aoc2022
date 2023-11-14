@@ -2,12 +2,13 @@ package _1
 
 import (
 	_ "embed"
-	"github.com/williamgcampbell/aoc2022/internal"
-	"github.com/williamgcampbell/aoc2022/internal/scanner"
 	"io"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/williamgcampbell/aoc2022/internal"
+	"github.com/williamgcampbell/aoc2022/internal/scanner"
 )
 
 //go:embed input.txt

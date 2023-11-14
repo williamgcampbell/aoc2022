@@ -6,6 +6,7 @@ import (
 	"github.com/williamgcampbell/aoc2022/internal"
 	"github.com/williamgcampbell/aoc2022/internal/scanner"
 	"io"
+	"log"
 	"strings"
 )
 
@@ -25,52 +26,14 @@ func (d *Solver) SolvePart2() string {
 func solve(reader io.Reader, part1 bool) string {
 	lines := scanner.ScanLines(reader)
 
-	var currentDir *Directory
-	var dirs []*Directory
-	for i, line := range lines {
-		if strings.HasPrefix(line, "$ cd ") {
-			cd := line[5:]
-			if cd == "sztz" {
-				fmt.Printf("found")
-			}
-			if cd == ".." {
-				if currentDir.Parent == nil {
-					fmt.Printf("%s %d\n", currentDir.Name, i)
-				}
-				currentDir = currentDir.Parent
-			} else {
-				if d, ok := getChildDirectory(dirs, currentDir, cd); ok {
-					currentDir = d
-				} else {
-					newDir := NewDirectory(nil, cd)
-					dirs = append(dirs, newDir)
-					currentDir = newDir
-				}
-			}
-		} else if strings.HasPrefix(line, "$ ls") {
-			continue
-		} else if strings.HasPrefix(line, "dir ") {
-			// dir
-			dirName := line[4:]
-			if _, ok := getChildDirectory(dirs, currentDir, dirName); !ok {
-				dir := NewDirectory(currentDir, dirName)
-				dirs = append(dirs, dir)
-				currentDir.Directories = append(currentDir.Directories, dir)
-			}
-		} else {
-			lsFile := strings.Split(line, " ")
-			// file
-			file := &File{
-				Name: lsFile[1],
-				Size: internal.MustAtoI(lsFile[0]),
-			}
-			currentDir.AddFile(file)
-		}
+	fs := &FileSystem{}
+	for _, line := range lines {
+		fs.ReplayLine(line)
 	}
 
 	if part1 {
 		var totalSize int
-		for _, dir := range dirs {
+		for _, dir := range fs.Directories {
 			size := dir.GetSize()
 			if size <= 100000 {
 				totalSize += size
@@ -79,7 +42,17 @@ func solve(reader io.Reader, part1 bool) string {
 		return fmt.Sprintf("%d", totalSize)
 	}
 
-	return "24933642" //TODO
+	unusedSpace := 70000000 - fs.RootDirectory.GetSize()
+	spaceNeeded := 30000000 - unusedSpace
+	var minSizeNeeded int
+	for _, dir := range fs.Directories {
+		size := dir.GetSize()
+		fmt.Printf("Directory: %s Size %d\n", dir.Path, size)
+		if size >= spaceNeeded && (size < minSizeNeeded || minSizeNeeded == 0) {
+			minSizeNeeded = size
+		}
+	}
+	return fmt.Sprintf("%d", minSizeNeeded)
 }
 
 func NewDirectory(current *Directory, name string) *Directory {
@@ -96,19 +69,51 @@ func NewDirectory(current *Directory, name string) *Directory {
 	}
 }
 
-func getChildDirectory(dd []*Directory, current *Directory, s string) (*Directory, bool) {
-	var path string
-	if current != nil {
-		path = current.Path + s + "/"
-	} else {
-		path = s
+type FileSystem struct {
+	CurrentDirectory *Directory
+	RootDirectory    *Directory
+	Directories      []*Directory
+}
+
+func (fs *FileSystem) ReplayLine(line string) {
+	if strings.HasPrefix(line, "$ ls") {
+		return
 	}
-	for _, d := range dd {
-		if d.Path == path {
-			return d, true
+
+	if strings.HasPrefix(line, "$ cd ") {
+		cd := line[5:]
+		if cd == ".." {
+			fs.CurrentDirectory = fs.CurrentDirectory.Parent
+		} else if cd == "/" {
+			// special case for this folder
+			newDir := NewDirectory(nil, cd)
+			fs.Directories = append(fs.Directories, newDir)
+			fs.CurrentDirectory = newDir
+			fs.RootDirectory = newDir
+		} else {
+			if d, ok := fs.CurrentDirectory.GetChildDirectory(cd); ok {
+				fs.CurrentDirectory = d
+			} else {
+				// This should never happen.
+				// Directories will always be added via the ls command before running cd into them
+				log.Fatalf("Could not find directory %s", cd)
+			}
 		}
+	} else if strings.HasPrefix(line, "dir ") {
+		dirName := line[4:]
+		if _, ok := fs.CurrentDirectory.GetChildDirectory(dirName); !ok {
+			dir := NewDirectory(fs.CurrentDirectory, dirName)
+			fs.Directories = append(fs.Directories, dir)
+			fs.CurrentDirectory.AddDirectory(dir)
+		}
+	} else {
+		lsFile := strings.Split(line, " ")
+		file := &File{
+			Name: lsFile[1],
+			Size: internal.MustAtoI(lsFile[0]),
+		}
+		fs.CurrentDirectory.AddFile(file)
 	}
-	return nil, false
 }
 
 type File struct {
@@ -126,6 +131,19 @@ type Directory struct {
 
 func (d *Directory) AddFile(f *File) {
 	d.Files = append(d.Files, f)
+}
+
+func (d *Directory) AddDirectory(dir *Directory) {
+	d.Directories = append(d.Directories, dir)
+}
+
+func (d *Directory) GetChildDirectory(name string) (*Directory, bool) {
+	for _, dir := range d.Directories {
+		if dir.Name == name {
+			return dir, true
+		}
+	}
+	return nil, false
 }
 
 func (d *Directory) GetSize() int {

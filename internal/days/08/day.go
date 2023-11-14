@@ -20,5 +20,6 @@ func (d *Solver) SolvePart2() string {
 }
 
 func solve(reader io.Reader, part1 bool) string {
+
 	return ""
 }
